@@ -1,14 +1,106 @@
 ﻿#include "pch.h"
 #include "framework.h"
 #include "Worker.h"
-/*
-DB::DB() {
-	int rc = sqlite3_open(dbname, &db);
-	if (rc) {
-		std::cerr << "Cant open db " << sqlite3_errmsg(db);
-	}
-	else {
-		std::cerr << "Success db";
-	}
+
+Man::Man() {}
+Man::~Man() {}
+
+Patient::Patient() {}
+Patient::~Patient() {}
+
+Worker::Worker() {}
+Worker::~Worker() {}
+
+const char* creatingTables = "CREATE TABLE IF NOT EXISTS patients ("
+"	id integer PRIMARY KEY AUTOINCREMENT,"
+"	name text,"
+"	dob date"
+");"
+"CREATE TABLE IF NOT EXISTS diagnoses ("
+"	id integer PRIMARY KEY AUTOINCREMENT,"
+"	people_id integer,"
+"	text text,"
+"	date date,"
+"	worker integer"
+");"
+"CREATE TABLE IF NOT EXISTS workers ("
+"	id integer PRIMARY KEY AUTOINCREMENT,"
+"	name text,"
+"	job text,"
+"	login text,"
+"	password text"
+");";
+
+const char* getPatientsDataSql = "SELECT * FROM patients";
+int getPatientsData(void* _, int argc, char** argv, char** azColName) {
+    for (int i = 1; i <= argc; i += 3) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
+        std::cout << azColName[i] << " " << argv[i] << std::endl;
+        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;
+    }
+    std::cout << std::endl;
+    return 0;
 }
-*/
+
+const char* getDiagnosesDataSql = "SELECT * FROM diagnoses";
+int getDiagnosesData(void* _, int argc, char** argv, char** azColName) {
+    for (int i = 1; i <= argc; i+=5) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
+        std::cout << azColName[i] << " " << argv[i] << std::endl;
+        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;
+        std::cout << azColName[i + 2] << " " << argv[i + 2] << std::endl;
+        std::cout << azColName[i + 3] << " " << argv[i + 3] << std::endl;
+    }
+    std::cout << std::endl;
+    return 0;
+}
+
+const char* getWorkersDataSql = "SELECT * FROM workers";
+int getWorkersData(void* _, int argc, char** argv, char** azColName) {
+    for (int i = 1; i <= argc; i += 5) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
+        std::cout << azColName[i] << " " << argv[i] << std::endl;
+        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;
+        std::cout << azColName[i + 2] << " " << argv[i + 2] << std::endl;
+        std::cout << azColName[i + 3] << " " << argv[i + 3] << std::endl;
+    }
+    std::cout << std::endl;
+    return 0;
+}
+
+DB::DB() {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, getPatientsDataSql, getPatientsData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, getDiagnosesDataSql, getDiagnosesData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, getWorkersDataSql, getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+DB::~DB() {}

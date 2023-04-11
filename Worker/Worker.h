@@ -1,42 +1,42 @@
-﻿#ifdef WORKER_EXPORTS
+﻿#include "..\sqlite\sqlite3.h"
+#include <string>
+#include <iostream>
+
+#ifdef WORKER_EXPORTS
 #define WORKER_API __declspec(dllexport)
 #else
 #define WORKER_API __declspec(dllimport)
 #endif
 
-#include "..\sqlite\sqlite3.h"
-#include <string>
-#include <iostream>
-
-class Man {
+class WORKER_API Man {
 private:
 
 public:
-	Man() {};
-	virtual ~Man() {};
+	Man();
+	virtual ~Man();
 };
 
-class Patient : public Man {
+class WORKER_API Patient : public Man {
 private:
 
 public:
-	Patient() {};
-	~Patient() {};
+	Patient();
+	~Patient();
 };
 
-class Worker : public Man {
+class WORKER_API Worker : public Man {
 private:
 
 public:
-	Worker() {};
-	~Worker() {};
+	Worker();
+	~Worker();
 };
 
-class DB {
+class WORKER_API DB {
 private:
 	const char* dbname = "card.db";
 	sqlite3* db;
 public:
 	DB();
-	~DB() {};
+	~DB();
 };
