@@ -1,3 +1,5 @@
+#include "Worker.h"
+
 #pragma once
 
 namespace Client {
