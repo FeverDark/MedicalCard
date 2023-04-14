@@ -1,6 +1,14 @@
-﻿#include "Worker.h"
+﻿#include "Controller.h"
+
+struct _ {
+    ~_() {
+        _CrtDumpMemoryLeaks();
+    }
+} __;
 
 int main() {
-	DB *db = new DB();
+    CController* controller = CController::getInstance();
+    std::string p = "1";
+    std::cout << sha_256(p);
 	return 0;
 }

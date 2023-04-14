@@ -1,4 +1,4 @@
-#include "Worker.h"
+#include "Controller.h"
 
 #pragma once
 
@@ -17,18 +17,15 @@ namespace Client {
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
-		MainForm(void)
+		MainForm(int^)
 		{
+			//DB db = DB();
 			InitializeComponent();
-			//
-			//TODO: добавьте код конструктора
-			//
+			//for (int i = 0; i < db.patients.size(); ++i) {
+				//this->listBox1->Items->Add(db.patients[i]->getId());
+			//}
 		}
-
 	protected:
-		/// <summary>
-		/// Освободить все используемые ресурсы.
-		/// </summary>
 		~MainForm()
 		{
 			if (components)
@@ -50,8 +47,6 @@ namespace Client {
 	private: System::Windows::Forms::Button^ button3;
 	private: System::Windows::Forms::Button^ button2;
 	private: System::Windows::Forms::Button^ button1;
-
-
 	private:
 		/// <summary>
 		/// Обязательная переменная конструктора.
@@ -74,10 +69,10 @@ namespace Client {
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
 			this->comboBox2 = (gcnew System::Windows::Forms::ComboBox());
 			this->actionButtons = (gcnew System::Windows::Forms::Panel());
-			this->button1 = (gcnew System::Windows::Forms::Button());
-			this->button2 = (gcnew System::Windows::Forms::Button());
-			this->button3 = (gcnew System::Windows::Forms::Button());
 			this->button4 = (gcnew System::Windows::Forms::Button());
+			this->button3 = (gcnew System::Windows::Forms::Button());
+			this->button2 = (gcnew System::Windows::Forms::Button());
+			this->button1 = (gcnew System::Windows::Forms::Button());
 			this->allArticles->SuspendLayout();
 			this->peoples->SuspendLayout();
 			this->actionButtons->SuspendLayout();
@@ -158,23 +153,14 @@ namespace Client {
 			this->actionButtons->Size = System::Drawing::Size(220, 21);
 			this->actionButtons->TabIndex = 8;
 			// 
-			// button1
+			// button4
 			// 
-			this->button1->Location = System::Drawing::Point(3, 2);
-			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(17, 15);
-			this->button1->TabIndex = 0;
-			this->button1->Text = L"button1";
-			this->button1->UseVisualStyleBackColor = true;
-			// 
-			// button2
-			// 
-			this->button2->Location = System::Drawing::Point(26, 2);
-			this->button2->Name = L"button2";
-			this->button2->Size = System::Drawing::Size(17, 15);
-			this->button2->TabIndex = 1;
-			this->button2->Text = L"button2";
-			this->button2->UseVisualStyleBackColor = true;
+			this->button4->Location = System::Drawing::Point(72, 2);
+			this->button4->Name = L"button4";
+			this->button4->Size = System::Drawing::Size(17, 15);
+			this->button4->TabIndex = 3;
+			this->button4->Text = L"button4";
+			this->button4->UseVisualStyleBackColor = true;
 			// 
 			// button3
 			// 
@@ -185,14 +171,23 @@ namespace Client {
 			this->button3->Text = L"button3";
 			this->button3->UseVisualStyleBackColor = true;
 			// 
-			// button4
+			// button2
 			// 
-			this->button4->Location = System::Drawing::Point(72, 2);
-			this->button4->Name = L"button4";
-			this->button4->Size = System::Drawing::Size(17, 15);
-			this->button4->TabIndex = 3;
-			this->button4->Text = L"button4";
-			this->button4->UseVisualStyleBackColor = true;
+			this->button2->Location = System::Drawing::Point(26, 2);
+			this->button2->Name = L"button2";
+			this->button2->Size = System::Drawing::Size(17, 15);
+			this->button2->TabIndex = 1;
+			this->button2->Text = L"button2";
+			this->button2->UseVisualStyleBackColor = true;
+			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(3, 2);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(17, 15);
+			this->button1->TabIndex = 0;
+			this->button1->Text = L"button1";
+			this->button1->UseVisualStyleBackColor = true;
 			// 
 			// MainForm
 			// 
@@ -214,5 +209,5 @@ namespace Client {
 
 		}
 #pragma endregion
-	};
+};
 }

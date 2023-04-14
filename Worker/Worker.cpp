@@ -2,11 +2,20 @@
 #include "framework.h"
 #include "Worker.h"
 
-std::vector<Man*> _tempdb_;
-//std::vector<Diagnosis> _tempdiagnosesdb_;
+std::vector<Man*> _tempworkersdb_; // Юзаю глобалку, потому что хочу
+std::vector<Man*> _temppatientssdb_; // Юзаю глобалку, потому что хочу
 
 Man::Man() {}
 Man::~Man() {}
+Man::Man(const Man&) {}
+Man* Man::copy() { return NULL; }
+int Man::getId() {
+    return NULL;
+}
+void Man::pushDiagnosis(Diagnosis) {}
+std::string Man::getLogin() { return NULL; }
+std::string Man::getPassword() { return NULL; }
+
 
 Patient::Patient(int id = 0, std::wstring name = L"", std::wstring dob = L"", Diagnosis d = Diagnosis()) {
     this->id = id;
@@ -17,6 +26,23 @@ Patient::Patient(int id = 0, std::wstring name = L"", std::wstring dob = L"", Di
     }
 }
 Patient::~Patient() {}
+Patient::Patient(const Patient& temp) {
+    id = temp.id;
+    name = temp.name;
+    dob = temp.dob;
+    a = temp.a;
+}
+Man* Patient::copy() {
+    return new Patient(*this);
+}
+int Patient::getId() {
+    return this->id;
+}
+void Patient::pushDiagnosis(Diagnosis t) {
+    this->a.push_back(t);
+}
+std::string Patient::getLogin() { return NULL; }
+std::string Patient::getPassword() { return NULL; }
 
 Worker::Worker(int id = 0, std::wstring name = L"", std::wstring job = L"", std::string login = "", std::string password = "") {
     this->id = id;
@@ -26,6 +52,26 @@ Worker::Worker(int id = 0, std::wstring name = L"", std::wstring job = L"", std:
     this->password = password;
 }
 Worker::~Worker() {}
+Worker::Worker(const Worker& temp) {
+    id = temp.id;
+    name = temp.name;
+    job = temp.job;
+    login = temp.login;
+    password = temp.password;
+}
+Man* Worker::copy() {
+    return new Worker(*this);
+}
+int Worker::getId() {
+    return this->id;
+}
+void Worker::pushDiagnosis(Diagnosis) {}
+std::string Worker::getLogin() {
+    return this->login;
+}
+std::string Worker::getPassword() {
+    return this->password;
+}
 
 const char* creatingTables = "CREATE TABLE IF NOT EXISTS patients ("
 "	id integer PRIMARY KEY AUTOINCREMENT,"
@@ -57,44 +103,28 @@ std::wstring charToWstring(char * _) {
 const char* getPatientsDataSql = "SELECT * FROM patients";
 int getPatientsData(void* _, int argc, char** argv, char** azColName) {
     for (int i = 1; i <= argc; i += 3) {
-        _tempdb_.push_back(new Patient(atoi(argv[i - 1]), charToWstring(argv[i]), charToWstring(argv[i + 1]), Diagnosis()));
-        /*std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
-        std::cout << azColName[i] << " " << argv[i] << std::endl;
-        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;*/
+        _temppatientssdb_.push_back(new Patient(atoi(argv[i - 1]), charToWstring(argv[i]), charToWstring(argv[i + 1]), Diagnosis()));
     }
-    //std::cout << std::endl;
     return 0;
 }
 
 const char* getDiagnosesDataSql = "SELECT * FROM diagnoses";
 int getDiagnosesData(void* _, int argc, char** argv, char** azColName) {
-    for (int i = 1; i <= argc; i+=5) {
-        for (int j = 0; j < _tempdb_.size(); ++j) {
-            if (atoi(argv[i]) == _tempdb_[j]->getId()) {
-                _tempdb_[i]->pushDiagnosis(Diagnosis(charToWstring(argv[i + 1]), charToWstring(argv[i + 2]), atoi(argv[i + 3])));
+    for (int i = 1; i <= argc; i += 5) {
+        for (int j = 0; j < _temppatientssdb_.size(); ++j) {
+            if (atoi(argv[i]) == _temppatientssdb_[j]->getId()) {
+                _temppatientssdb_[j]->pushDiagnosis(Diagnosis(charToWstring(argv[i + 1]), charToWstring(argv[i + 2]), atoi(argv[i + 3])));
             }
         }
-        /*std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
-        std::cout << azColName[i] << " " << argv[i] << std::endl;
-        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;
-        std::cout << azColName[i + 2] << " " << argv[i + 2] << std::endl;
-        std::cout << azColName[i + 3] << " " << argv[i + 3] << std::endl;*/
     }
-    //std::cout << std::endl;
     return 0;
 }
 
 const char* getWorkersDataSql = "SELECT * FROM workers";
 int getWorkersData(void* _, int argc, char** argv, char** azColName) {
     for (int i = 1; i <= argc; i += 5) {
-        _tempdb_.push_back(new Worker(atoi(argv[i - 1]), charToWstring(argv[i]), charToWstring(argv[i+1]), std::string(argv[i + 2]), std::string(argv[i + 3])));
-        /*std::cout << azColName[i - 1] << " " << argv[i - 1] << std::endl;
-        std::cout << azColName[i] << " " << argv[i] << std::endl;
-        std::cout << azColName[i + 1] << " " << argv[i + 1] << std::endl;
-        std::cout << azColName[i + 2] << " " << argv[i + 2] << std::endl;
-        std::cout << azColName[i + 3] << " " << argv[i + 3] << std::endl;*/
+        _tempworkersdb_.push_back(new Worker(atoi(argv[i - 1]), charToWstring(argv[i]), charToWstring(argv[i + 1]), std::string(argv[i + 2]), std::string(argv[i + 3])));
     }
-    //std::cout << std::endl;
     return 0;
 }
 
@@ -129,5 +159,22 @@ DB::DB() {
     } while (false);
     if (NULL != db) sqlite3_close(db);
     sqlite3_shutdown();
+    for (int i = 0; i < _temppatientssdb_.size(); ++i) {
+        this->patients.push_back(_temppatientssdb_[i]->copy());
+        delete _temppatientssdb_[i];
+    }
+    _temppatientssdb_.clear();
+    for (int i = 0; i < _tempworkersdb_.size(); ++i) {
+        this->workers.push_back(_tempworkersdb_[i]->copy());
+        delete _tempworkersdb_[i];
+    }
+    _tempworkersdb_.clear();
 }
-DB::~DB() {}
+DB::~DB() {
+    for (int i = 0; i < patients.size(); ++i) {
+        delete patients[i];
+    }
+    for (int i = 0; i < workers.size(); ++i) {
+        delete workers[i];
+    }
+}

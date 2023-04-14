@@ -1,8 +1,10 @@
-﻿#include "..\sqlite\sqlite3.h"
+﻿#ifndef WORKER_H
+#define WORKER_H
+
 #include <string>
 #include <iostream>
 #include <vector>
-#include "sha256.h"
+#include "..\sqlite\sqlite3.h"
 
 #ifdef WORKER_EXPORTS
 #define WORKER_API __declspec(dllexport)
@@ -26,8 +28,12 @@ private:
 public:
 	Man();
 	virtual ~Man();
+	Man(const Man&);
+	virtual Man* copy();
 	virtual int getId();
 	virtual void pushDiagnosis(Diagnosis);
+	virtual std::string getLogin();
+	virtual std::string getPassword();
 };
 
 class WORKER_API Patient : public Man {
@@ -39,8 +45,12 @@ private:
 public:
 	Patient(int, std::wstring, std::wstring, Diagnosis);
 	~Patient();
+	Patient(const Patient&);
+	Man* copy() override;
 	int getId() override;
 	void pushDiagnosis(Diagnosis) override;
+	std::string getLogin() override;
+	std::string getPassword() override;
 };
 
 class WORKER_API Worker : public Man {
@@ -53,14 +63,21 @@ private:
 public:
 	Worker(int, std::wstring, std::wstring, std::string, std::string);
 	~Worker();
+	Worker(const Worker&);
+	Man* copy() override;
 	int getId() override;
 	void pushDiagnosis(Diagnosis) override;
+	std::string getLogin() override;
+	std::string getPassword() override;
 };
 
 class WORKER_API DB {
 private:
-	std::vector<Man*> db;
 public:
+	std::vector<Man*> patients;
+	std::vector<Man*> workers;
 	DB();
 	~DB();
 };
+
+#endif //WORKER_H
