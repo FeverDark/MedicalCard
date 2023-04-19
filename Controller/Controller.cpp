@@ -17,6 +17,15 @@ CController::~CController() {
 
 CController* CController::p_instance = 0;
 
+void CController::pushPatient(int id = 0, std::wstring name = L"", std::wstring dob = L"", std::wstring creationdate = L"", std::wstring changedate = L"", std::wstring diagnosis = L"") {
+	this->db->patients.push_back(new Patient(id, name, dob, creationdate, changedate, diagnosis));
+}
+
+void CController::deletePatient(int id) {
+    delete db->patients[id];
+    db->patients.erase(db->patients.begin() + id);
+}
+
 std::string sha_256(std::string temp) {
     return sha256(temp);
 }

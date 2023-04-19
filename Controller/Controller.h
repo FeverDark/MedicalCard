@@ -22,6 +22,8 @@ public:
     DB* db;
     static CController* getInstance();
     ~CController();
+    void pushPatient(int, std::wstring, std::wstring, std::wstring, std::wstring, std::wstring);
+    void deletePatient(int);
 };
 
 #endif //CONTROLLER_H

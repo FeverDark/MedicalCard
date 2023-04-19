@@ -12,9 +12,6 @@ namespace Client {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
-	/// <summary>
-	/// Сводка для LoginForm
-	/// </summary>
 	public ref class LoginForm : public System::Windows::Forms::Form
 	{
 	public:
@@ -23,15 +20,8 @@ namespace Client {
 		{
 			controller = CController::getInstance();
 			InitializeComponent();
-			//
-			//TODO: добавьте код конструктора
-			//
 		}
-
 	protected:
-		/// <summary>
-		/// Освободить все используемые ресурсы.
-		/// </summary>
 		~LoginForm()
 		{
 			if (components)
@@ -39,62 +29,105 @@ namespace Client {
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::TextBox^ login;
-	private: System::Windows::Forms::TextBox^ password;
+	private: CController* controller;
+	private: System::Windows::Forms::Label^ loginText;
+	private: System::Windows::Forms::Label^ passText;
 	private: System::Windows::Forms::Button^ loginButton;
-	private:
-		CController* controller;
-		/// <summary>
-		/// Обязательная переменная конструктора.
-		/// </summary>
+	private: System::Windows::Forms::TextBox^ password;
+	private: System::Windows::Forms::TextBox^ login;
+	private: System::Windows::Forms::Label^ label1;
 		System::ComponentModel::Container ^components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Требуемый метод для поддержки конструктора — не изменяйте 
-		/// содержимое этого метода с помощью редактора кода.
-		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->login = (gcnew System::Windows::Forms::TextBox());
-			this->password = (gcnew System::Windows::Forms::TextBox());
+			this->loginText = (gcnew System::Windows::Forms::Label());
+			this->passText = (gcnew System::Windows::Forms::Label());
 			this->loginButton = (gcnew System::Windows::Forms::Button());
+			this->password = (gcnew System::Windows::Forms::TextBox());
+			this->login = (gcnew System::Windows::Forms::TextBox());
+			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
-			// login
+			// loginText
 			// 
-			this->login->Location = System::Drawing::Point(87, 60);
-			this->login->Name = L"login";
-			this->login->Size = System::Drawing::Size(100, 20);
-			this->login->TabIndex = 0;
+			this->loginText->AutoSize = true;
+			this->loginText->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->loginText->Location = System::Drawing::Point(336, 176);
+			this->loginText->Name = L"loginText";
+			this->loginText->Size = System::Drawing::Size(70, 21);
+			this->loginText->TabIndex = 14;
+			this->loginText->Text = L"Логин: ";
 			// 
-			// password
+			// passText
 			// 
-			this->password->Location = System::Drawing::Point(87, 101);
-			this->password->Name = L"password";
-			this->password->Size = System::Drawing::Size(100, 20);
-			this->password->TabIndex = 1;
+			this->passText->AutoSize = true;
+			this->passText->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->passText->Location = System::Drawing::Point(328, 211);
+			this->passText->Name = L"passText";
+			this->passText->Size = System::Drawing::Size(78, 21);
+			this->passText->TabIndex = 13;
+			this->passText->Text = L"Пароль: ";
 			// 
 			// loginButton
 			// 
-			this->loginButton->Location = System::Drawing::Point(87, 149);
+			this->loginButton->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->loginButton->Location = System::Drawing::Point(403, 260);
 			this->loginButton->Name = L"loginButton";
-			this->loginButton->Size = System::Drawing::Size(100, 23);
-			this->loginButton->TabIndex = 2;
-			this->loginButton->Text = L"button1";
+			this->loginButton->Size = System::Drawing::Size(100, 27);
+			this->loginButton->TabIndex = 12;
+			this->loginButton->Text = L"Войти";
 			this->loginButton->UseVisualStyleBackColor = true;
 			this->loginButton->Click += gcnew System::EventHandler(this, &LoginForm::loginButton_Click);
+			// 
+			// password
+			// 
+			this->password->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->password->Location = System::Drawing::Point(412, 208);
+			this->password->Name = L"password";
+			this->password->PasswordChar = '*';
+			this->password->Size = System::Drawing::Size(145, 29);
+			this->password->TabIndex = 11;
+			// 
+			// login
+			// 
+			this->login->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->login->Location = System::Drawing::Point(412, 173);
+			this->login->Name = L"login";
+			this->login->Size = System::Drawing::Size(145, 29);
+			this->login->TabIndex = 10;
+			// 
+			// label1
+			// 
+			this->label1->AutoSize = true;
+			this->label1->Font = (gcnew System::Drawing::Font(L"Times New Roman", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->label1->Location = System::Drawing::Point(299, 64);
+			this->label1->Name = L"label1";
+			this->label1->Size = System::Drawing::Size(304, 36);
+			this->label1->TabIndex = 15;
+			this->label1->Text = L"Медицинская карта";
 			// 
 			// LoginForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(284, 261);
+			this->AutoScroll = true;
+			this->AutoSizeMode = System::Windows::Forms::AutoSizeMode::GrowAndShrink;
+			this->ClientSize = System::Drawing::Size(884, 461);
+			this->Controls->Add(this->label1);
+			this->Controls->Add(this->loginText);
+			this->Controls->Add(this->passText);
 			this->Controls->Add(this->loginButton);
 			this->Controls->Add(this->password);
 			this->Controls->Add(this->login);
 			this->Name = L"LoginForm";
-			this->Text = L"LoginForm";
+			this->Text = L"Авторизация";
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -117,12 +150,11 @@ namespace Client {
 		}
 		if (tempid != -1 && l == controller->db->workers[tempid]->getLogin() && p == controller->db->workers[tempid]->getPassword()) {
 			this->loginid = tempid;
-			//MessageBox::Show("Yea");
 			this->Close();
 		}
 		else {
 			MessageBox::Show("Wrong Password Or Login");
 		}
 	}
-	};
+};
 }
