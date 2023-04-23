@@ -12,7 +12,6 @@ int main(array<String^>^ args) {
 	login.ShowDialog();
 	int^ loginid = login.loginid;
 	if (loginid != nullptr) {
-		Client::MainForm main(loginid);
-		Application::Run(%main);
+		Application::Run(gcnew Client::MainForm(loginid));
 	}
 }

@@ -1,8 +1,9 @@
-#include "Controller.h"
+п»ї#include "Controller.h"
 #include "Creation.h"
+#include "EditForm.h"
+#include "ProcedureCreation.h"
 #include <thread>
 #include <msclr\marshal_cppstd.h>
-#include <locale.h>
 
 #pragma once
 
@@ -16,15 +17,15 @@ namespace Client {
 	using namespace System::Drawing;
 
 	/// <summary>
-	/// Сводка для MainForm
+	/// РЎРІРѕРґРєР° РґР»СЏ MainForm
 	/// </summary>
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
-		MainForm(int^)
+		MainForm(int^ loginid)
 		{
 			controller = CController::getInstance();
-			InitializeComponent();
+			InitializeComponent((int)loginid);
 		}
 	protected:
 		~MainForm()
@@ -34,18 +35,21 @@ namespace Client {
 				delete components;
 			}
 		}
+	private: int lid;
 	private: CController* controller;
 	private: DataTable^ Table;
 	private: DataSet^ Set;
+	private: int^ predId;
 	private: System::Windows::Forms::Panel^ articles;
 	protected:
 	private: System::Windows::Forms::Panel^ articleText;
 	private: System::Windows::Forms::Panel^ allArticles;
 	private: System::Windows::Forms::Panel^ peoples;
-	private: System::Windows::Forms::ComboBox^ comboBox2;
 	private: System::Windows::Forms::Panel^ actionButtons;
 	private: System::Windows::Forms::Button^ deleteButton;
 	private: System::Windows::Forms::Button^ editButton;
+	private: System::Windows::Forms::Button^ deleteProcedure;
+	private: System::Windows::Forms::Button^ addProcedure;
 	private: System::Windows::Forms::Button^ addButton;
 	private: System::Windows::Forms::RichTextBox^ richTextBox1;
 	private: System::Windows::Forms::Label^ label6;
@@ -56,20 +60,22 @@ namespace Client {
 	private: System::Windows::Forms::RichTextBox^ richTextBox2;
 	private: System::Windows::Forms::DataGridView^ mainTable;
 	private: System::Windows::Forms::TreeView^ treeView1;
+	private: System::Windows::Forms::TextBox^ loginText;
+
 	private:
 		/// <summary>
-		/// Обязательная переменная конструктора.
+		/// РћР±СЏР·Р°С‚РµР»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°.
 		/// </summary>
 		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Требуемый метод для поддержки конструктора — не изменяйте 
-		/// содержимое этого метода с помощью редактора кода.
+		/// РўСЂРµР±СѓРµРјС‹Р№ РјРµС‚РѕРґ РґР»СЏ РїРѕРґРґРµСЂР¶РєРё РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° вЂ” РЅРµ РёР·РјРµРЅСЏР№С‚Рµ 
+		/// СЃРѕРґРµСЂР¶РёРјРѕРµ СЌС‚РѕРіРѕ РјРµС‚РѕРґР° СЃ РїРѕРјРѕС‰СЊСЋ СЂРµРґР°РєС‚РѕСЂР° РєРѕРґР°.
 		/// </summary>
-		void InitializeComponent(void)
+		void InitializeComponent(int loginid)
 		{
-			setlocale(LC_ALL, "RU");
+			lid = loginid;
 			this->articles = (gcnew System::Windows::Forms::Panel());
 			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
 			this->label6 = (gcnew System::Windows::Forms::Label());
@@ -83,11 +89,13 @@ namespace Client {
 			this->mainTable = (gcnew System::Windows::Forms::DataGridView());
 			this->peoples = (gcnew System::Windows::Forms::Panel());
 			this->treeView1 = (gcnew System::Windows::Forms::TreeView());
-			this->comboBox2 = (gcnew System::Windows::Forms::ComboBox());
 			this->actionButtons = (gcnew System::Windows::Forms::Panel());
 			this->deleteButton = (gcnew System::Windows::Forms::Button());
 			this->editButton = (gcnew System::Windows::Forms::Button());
 			this->addButton = (gcnew System::Windows::Forms::Button());
+			this->deleteProcedure = (gcnew System::Windows::Forms::Button());
+			this->addProcedure = (gcnew System::Windows::Forms::Button());
+			this->loginText = (gcnew System::Windows::Forms::TextBox());
 			this->articles->SuspendLayout();
 			this->articleText->SuspendLayout();
 			this->allArticles->SuspendLayout();
@@ -98,7 +106,7 @@ namespace Client {
 			// 
 			// articles
 			// 
-			this->articles->BackColor = System::Drawing::Color::PowderBlue;
+			this->articles->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->articles->Controls->Add(this->richTextBox1);
 			this->articles->Controls->Add(this->label6);
 			this->articles->Controls->Add(this->label3);
@@ -111,11 +119,14 @@ namespace Client {
 			// 
 			// richTextBox1
 			// 
+			this->richTextBox1->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
 			this->richTextBox1->Location = System::Drawing::Point(3, 136);
 			this->richTextBox1->Name = L"richTextBox1";
 			this->richTextBox1->Size = System::Drawing::Size(580, 79);
 			this->richTextBox1->TabIndex = 6;
 			this->richTextBox1->Text = L"";
+			this->richTextBox1->TextChanged += gcnew System::EventHandler(this, &MainForm::richTextBox1_TextChanged);
 			// 
 			// label6
 			// 
@@ -126,7 +137,7 @@ namespace Client {
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(77, 21);
 			this->label6->TabIndex = 5;
-			this->label6->Text = L"Диагноз";
+			this->label6->Text = L"Р”РёР°РіРЅРѕР·";
 			// 
 			// label3
 			// 
@@ -137,7 +148,7 @@ namespace Client {
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(58, 19);
 			this->label3->TabIndex = 2;
-			this->label3->Text = L"Создан";
+			this->label3->Text = L"РЎРѕР·РґР°РЅ";
 			// 
 			// label2
 			// 
@@ -148,7 +159,7 @@ namespace Client {
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(68, 19);
 			this->label2->TabIndex = 1;
-			this->label2->Text = L"Изменен";
+			this->label2->Text = L"РР·РјРµРЅРµРЅ";
 			// 
 			// label1
 			// 
@@ -159,13 +170,15 @@ namespace Client {
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(328, 24);
 			this->label1->TabIndex = 0;
-			this->label1->Text = L"Медицинская карта пациента %s";
+			this->label1->Text = L"РњРµРґРёС†РёРЅСЃРєР°СЏ РєР°СЂС‚Р° РїР°С†РёРµРЅС‚Р° %s";
 			// 
 			// articleText
 			// 
-			this->articleText->BackColor = System::Drawing::Color::PowderBlue;
+			this->articleText->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->articleText->Controls->Add(this->label4);
 			this->articleText->Controls->Add(this->richTextBox2);
+			this->articleText->Controls->Add(this->addProcedure);
+			this->articleText->Controls->Add(this->deleteProcedure);
 			this->articleText->Location = System::Drawing::Point(254, 255);
 			this->articleText->Name = L"articleText";
 			this->articleText->Size = System::Drawing::Size(586, 201);
@@ -180,7 +193,7 @@ namespace Client {
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(169, 21);
 			this->label4->TabIndex = 1;
-			this->label4->Text = L"Протокол операции";
+			this->label4->Text = L"РџСЂРѕС‚РѕРєРѕР» РїСЂРѕС†РµРґСѓСЂС‹";
 			// 
 			// richTextBox2
 			// 
@@ -189,10 +202,11 @@ namespace Client {
 			this->richTextBox2->Size = System::Drawing::Size(580, 167);
 			this->richTextBox2->TabIndex = 0;
 			this->richTextBox2->Text = L"";
+			this->richTextBox2->TextChanged += gcnew System::EventHandler(this, &MainForm::richTextBox2_TextChanged);
 			// 
 			// allArticles
 			// 
-			this->allArticles->BackColor = System::Drawing::Color::PowderBlue;
+			this->allArticles->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->allArticles->Controls->Add(this->mainTable);
 			this->allArticles->Location = System::Drawing::Point(12, 30);
 			this->allArticles->Name = L"allArticles";
@@ -201,18 +215,24 @@ namespace Client {
 			// 
 			// mainTable
 			// 
-			this->mainTable->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->mainTable->AllowUserToAddRows = false;
+			this->mainTable->AllowUserToDeleteRows = false;
+			this->mainTable->AllowUserToResizeRows = false;
+			this->mainTable->AutoSizeColumnsMode = System::Windows::Forms::DataGridViewAutoSizeColumnsMode::Fill;
 			this->mainTable->EditMode = System::Windows::Forms::DataGridViewEditMode::EditProgrammatically;
 			this->mainTable->Location = System::Drawing::Point(3, 3);
+			this->mainTable->MultiSelect = false;
 			this->mainTable->Name = L"mainTable";
 			this->mainTable->ReadOnly = true;
+			this->mainTable->RowHeadersVisible = false;
+			this->mainTable->ShowEditingIcon = false;
 			this->mainTable->Size = System::Drawing::Size(215, 212);
 			this->mainTable->TabIndex = 0;
 			this->mainTable->SelectionChanged += gcnew System::EventHandler(this, &MainForm::mainTable_SelectionChanged);
 			// 
 			// peoples
 			// 
-			this->peoples->BackColor = System::Drawing::Color::PowderBlue;
+			this->peoples->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->peoples->Controls->Add(this->treeView1);
 			this->peoples->Location = System::Drawing::Point(12, 255);
 			this->peoples->Name = L"peoples";
@@ -225,18 +245,11 @@ namespace Client {
 			this->treeView1->Name = L"treeView1";
 			this->treeView1->Size = System::Drawing::Size(214, 192);
 			this->treeView1->TabIndex = 0;
-			// 
-			// comboBox2
-			// 
-			this->comboBox2->FormattingEnabled = true;
-			this->comboBox2->Location = System::Drawing::Point(254, 3);
-			this->comboBox2->Name = L"comboBox2";
-			this->comboBox2->Size = System::Drawing::Size(219, 21);
-			this->comboBox2->TabIndex = 7;
+			this->treeView1->AfterSelect += gcnew System::Windows::Forms::TreeViewEventHandler(this, &MainForm::treeView1_AfterSelect);
 			// 
 			// actionButtons
 			// 
-			this->actionButtons->BackColor = System::Drawing::Color::PowderBlue;
+			this->actionButtons->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->actionButtons->Controls->Add(this->deleteButton);
 			this->actionButtons->Controls->Add(this->editButton);
 			this->actionButtons->Controls->Add(this->addButton);
@@ -247,32 +260,80 @@ namespace Client {
 			// 
 			// deleteButton
 			// 
+			this->deleteButton->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->deleteButton->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
 			this->deleteButton->Location = System::Drawing::Point(61, 0);
 			this->deleteButton->Name = L"deleteButton";
 			this->deleteButton->Size = System::Drawing::Size(20, 21);
 			this->deleteButton->TabIndex = 2;
-			this->deleteButton->Text = L"D";
+			this->deleteButton->Text = L"вњ–";
 			this->deleteButton->UseVisualStyleBackColor = true;
 			this->deleteButton->Click += gcnew System::EventHandler(this, &MainForm::deleteButton_Click);
 			// 
 			// editButton
 			// 
+			this->editButton->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->editButton->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
 			this->editButton->Location = System::Drawing::Point(32, 0);
 			this->editButton->Name = L"editButton";
 			this->editButton->Size = System::Drawing::Size(23, 21);
 			this->editButton->TabIndex = 1;
-			this->editButton->Text = L"E";
+			this->editButton->Text = L"вњЋ";
 			this->editButton->UseVisualStyleBackColor = true;
+			this->editButton->Click += gcnew System::EventHandler(this, &MainForm::editButton_Click);
 			// 
 			// addButton
 			// 
+			this->addButton->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->addButton->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
 			this->addButton->Location = System::Drawing::Point(3, 0);
 			this->addButton->Name = L"addButton";
 			this->addButton->Size = System::Drawing::Size(24, 21);
 			this->addButton->TabIndex = 0;
-			this->addButton->Text = L"A";
+			this->addButton->Text = L"вћ•";
 			this->addButton->UseVisualStyleBackColor = true;
 			this->addButton->Click += gcnew System::EventHandler(this, &MainForm::addButton_Click);
+
+			// 
+			// deleteProcedure
+			// 
+			this->deleteProcedure->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->deleteProcedure->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
+			this->deleteProcedure->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->deleteProcedure->Location = System::Drawing::Point(350, 0);
+			this->deleteProcedure->Name = L"deleteProcedure";
+			this->deleteProcedure->Size = System::Drawing::Size(112, 27);
+			this->deleteProcedure->TabIndex = 2;
+			this->deleteProcedure->Text = L"-РџСЂРѕС†РµРґСѓСЂР°";
+			this->deleteProcedure->UseVisualStyleBackColor = true;
+			this->deleteProcedure->Click += gcnew System::EventHandler(this, &MainForm::deleteProcedureButton_Click);
+			// 
+			// addProcedure
+			// 
+			this->addProcedure->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->addProcedure->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
+			this->addProcedure->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->addProcedure->Location = System::Drawing::Point(203, 0);
+			this->addProcedure->Name = L"addProcedure";
+			this->addProcedure->Size = System::Drawing::Size(112, 27);
+			this->addProcedure->TabIndex = 0;
+			this->addProcedure->Text = L"+РџСЂРѕС†РµРґСѓСЂР°";
+			this->addProcedure->UseVisualStyleBackColor = true;
+			this->addProcedure->Click += gcnew System::EventHandler(this, &MainForm::addProcedureButton_Click);
+
+			// 
+			// loginText
+			// 
+			this->loginText->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->loginText->Location = System::Drawing::Point(254, 0);
+			this->loginText->Name = L"loginText";
+			this->loginText->ReadOnly = true;
+			this->loginText->Size = System::Drawing::Size(219, 26);
+			this->loginText->TabIndex = 9;
+			this->loginText->Text = L"РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: " + msclr::interop::marshal_as<System::String^>(controller->db->workers[loginid]->getName());
 			// 
 			// MainForm
 			// 
@@ -280,16 +341,16 @@ namespace Client {
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoScroll = true;
 			this->AutoSizeMode = System::Windows::Forms::AutoSizeMode::GrowAndShrink;
-			this->BackColor = System::Drawing::Color::PowderBlue;
+			this->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->ClientSize = System::Drawing::Size(884, 461);
+			this->Controls->Add(this->loginText);
 			this->Controls->Add(this->actionButtons);
-			this->Controls->Add(this->comboBox2);
 			this->Controls->Add(this->peoples);
 			this->Controls->Add(this->allArticles);
 			this->Controls->Add(this->articleText);
 			this->Controls->Add(this->articles);
 			this->Name = L"MainForm";
-			this->Text = L"Медицинская карта";
+			this->Text = L"РњРµРґРёС†РёРЅСЃРєР°СЏ РєР°СЂС‚Р°";
 			this->Load += gcnew System::EventHandler(this, &MainForm::MainForm_Load);
 			this->articles->ResumeLayout(false);
 			this->articles->PerformLayout();
@@ -300,24 +361,46 @@ namespace Client {
 			this->peoples->ResumeLayout(false);
 			this->actionButtons->ResumeLayout(false);
 			this->ResumeLayout(false);
+			this->PerformLayout();
+		}
 
+		void TreeUpdate(int id)
+		{
+			this->treeView1->BeginUpdate();
+			this->treeView1->Nodes->Clear();
+			TreeNode^ node = gcnew TreeNode(msclr::interop::marshal_as<String^>("РџСЂРѕС†РµРґСѓСЂС‹"), 0, -1);
+			this->treeView1->Nodes->Add(node);
+			std::vector<std::wstring> temp = controller->getProcedures(id);
+			for (int i = 0; i < temp.size(); ++i) {
+				node = gcnew TreeNode(L"", 0, 1);
+				node->Name = msclr::interop::marshal_as<String^>(temp[i]);
+				node->Text = msclr::interop::marshal_as<String^>(temp[i]);
+				this->treeView1->Nodes[0]->Nodes->Add(node);
+			}
+			this->treeView1->EndUpdate();
 		}
 #pragma endregion
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
-
+		ToolTip^ toolTip1 = gcnew ToolTip;
+		toolTip1->SetToolTip(this->deleteButton, "РЈРґР°Р»РёС‚СЊ РєР°СЂС‚Сѓ");
+		toolTip1->SetToolTip(this->editButton, "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°СЂС‚С‹");
+		toolTip1->SetToolTip(this->addButton, "Р”РѕР±Р°РІРёС‚СЊ РєР°СЂС‚Сѓ");
 		Table = gcnew DataTable();
 		Set = gcnew DataSet();
 		mainTable->DataSource = Table;
-		Table->Columns->Add(L"Имя");
-		Table->Columns->Add(L"Дата рождения");
+		Table->Columns->Add(L"РРјСЏ");
+		Table->Columns->Add(L"Р”Р°С‚Р° СЂРѕР¶РґРµРЅРёСЏ");
 		Set->Tables->Add(Table);
 		for (int i = 0; i < controller->db->patients.size(); ++i) {
 			Table->Rows->Add(msclr::interop::marshal_as<System::String^>(controller->db->patients[i]->getName()), msclr::interop::marshal_as<System::String^>(controller->db->patients[i]->getDob()));
 		}
+		for (int i = 0; i < this->mainTable->Columns->Count; ++i) {
+			this->mainTable->Columns[i]->SortMode = DataGridViewColumnSortMode::NotSortable;
+		}
 		MainForm::Update();
 	}
 	private: System::Void MainForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
-		// Выгрузка
+		// Р’С‹РіСЂСѓР·РєР°
 	}
 	private: System::Void addButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		Client::Creation creationform;
@@ -338,22 +421,98 @@ namespace Client {
 			MainForm::Update();
 		}
 	}
+	private: System::Void editButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (tempid >= 0 && tempid < controller->db->patients.size()) {
+			Client::EditForm editform(this->mainTable->Rows[tempid]->Cells[0]->Value->ToString(), this->mainTable->Rows[tempid]->Cells[1]->Value->ToString());
+			editform.ShowDialog();
+			if (editform.name->Length != 0 || editform.dob->Length != 0) {
+				if (editform.name != this->mainTable->Rows[tempid]->Cells[0]->Value || editform.dob != this->mainTable->Rows[tempid]->Cells[1]->Value) {
+					String^ _ = editform.name;
+					String^ __ = editform.dob;
+					controller->editPatient(tempid,
+						msclr::interop::marshal_as<std::wstring>(_),
+						msclr::interop::marshal_as<std::wstring>(__));
+					this->mainTable->Rows[tempid]->Cells[0]->Value = editform.name;
+					this->mainTable->Rows[tempid]->Cells[1]->Value = editform.dob;
+					MainForm::Update();
+				}
+			}
+		}
+	}
 	private: System::Void deleteButton_Click(System::Object^ sender, System::EventArgs^ e) {
-		if (mainTable->CurrentCell->RowIndex >= 0 && mainTable->CurrentCell->RowIndex < controller->db->patients.size()) {
-			System::Windows::Forms::DialogResult dialogRes = MessageBox::Show(this, L"Вы уверены, что хотите удалить карту?", "Подтверждение", MessageBoxButtons::OKCancel, MessageBoxIcon::Question);
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (tempid >= 0 && tempid < controller->db->patients.size()) {
+			System::Windows::Forms::DialogResult dialogRes = MessageBox::Show(this, L"Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РєР°СЂС‚Сѓ?", "РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ", MessageBoxButtons::OKCancel, MessageBoxIcon::Question);
 			if (System::Windows::Forms::DialogResult::OK == dialogRes) {
-				this->mainTable->Rows->RemoveAt(mainTable->CurrentCell->RowIndex);
-				controller->deletePatient(int(mainTable->CurrentCell->RowIndex));
+				this->mainTable->Rows->RemoveAt(tempid);
+				controller->deletePatient(int(tempid));
 				MainForm::Update();
 			}
 		}
 	}
 	private: System::Void mainTable_SelectionChanged(System::Object^ sender, System::EventArgs^ e) {
-		if (mainTable->CurrentCell->RowIndex >= 0 && mainTable->CurrentCell->RowIndex < controller->db->patients.size()) {
-			this->label1->Text = L"Медицинская карта пациента " + msclr::interop::marshal_as<String^>(controller->db->patients[mainTable->CurrentCell->RowIndex]->getName());
-			this->label2->Text = L"Изменен: " + msclr::interop::marshal_as<String^>(controller->db->patients[mainTable->CurrentCell->RowIndex]->getChange());
-			this->label3->Text = L"Создан: " + msclr::interop::marshal_as<String^>(controller->db->patients[mainTable->CurrentCell->RowIndex]->getCreation());
-			this->richTextBox1->Text = msclr::interop::marshal_as<String^>(controller->db->patients[mainTable->CurrentCell->RowIndex]->getDiagnosis());
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (tempid >= 0 && tempid < controller->db->patients.size() && predId != tempid) {
+			TreeUpdate(tempid);
+			this->treeView1->ExpandAll();
+			this->label1->Text = L"РњРµРґРёС†РёРЅСЃРєР°СЏ РєР°СЂС‚Р° РїР°С†РёРµРЅС‚Р° " + msclr::interop::marshal_as<String^>(controller->db->patients[tempid]->getName());
+			this->label2->Text = L"РР·РјРµРЅРµРЅ: " + msclr::interop::marshal_as<String^>(controller->db->patients[tempid]->getChange());
+			this->label3->Text = L"РЎРѕР·РґР°РЅ: " + msclr::interop::marshal_as<String^>(controller->db->patients[tempid]->getCreation());
+			this->richTextBox1->Clear();
+			this->richTextBox1->AppendText(msclr::interop::marshal_as<String^>(controller->db->patients[tempid]->getDiagnosis()));
+		}
+		predId = tempid;
+	}
+	private: System::Void richTextBox1_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (tempid >= 0 && tempid < controller->db->patients.size() && this->richTextBox1->Focused) {
+			String^ _ = richTextBox1->Text;
+			controller->editPatientDiagnosis(tempid, msclr::interop::marshal_as<std::wstring>(_), msclr::interop::marshal_as<std::wstring>(DateTime::Now.ToString("dd.MM.yyyy")));
+			this->label2->Text = L"РР·РјРµРЅРµРЅ: " + msclr::interop::marshal_as<String^>(controller->db->patients[tempid]->getChange());
+		}
+	}
+	private: System::Void richTextBox2_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (this->treeView1->SelectedNode->Level == 1 && tempid >= 0 && tempid < controller->db->patients.size() && this->richTextBox2->Focused) {
+			String^ _ = richTextBox2->Text;
+			controller->editProcedure(tempid, msclr::interop::marshal_as<std::wstring>(this->treeView1->SelectedNode->Text), msclr::interop::marshal_as<std::wstring>(_));
+			this->treeView1->SelectedNode->Text = richTextBox2->Text;
+		}
+	}
+	private: System::Void treeView1_AfterSelect(System::Object^ sender, System::Windows::Forms::TreeViewEventArgs^ e) {
+		if (this->treeView1->SelectedNode->Level == 1) {
+			this->richTextBox2->Clear();
+			this->richTextBox2->AppendText(this->treeView1->SelectedNode->Text);
+		}
+	}
+	private: System::Void addProcedureButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (this->treeView1->Focus()) {
+			if (this->treeView1->SelectedNode->Level == 1 && tempid >= 0 && tempid < controller->db->patients.size()) {
+				Client::ProcedureCreation create;
+				create.ShowDialog();
+				if (create.text->Length != 0) {
+					String^ _ = create.text;
+					controller->addProcedure(tempid,
+						msclr::interop::marshal_as<std::wstring>(_),
+						msclr::interop::marshal_as<std::wstring>(DateTime::Now.ToString("dd.MM.yyyy")),
+						lid);
+					this->treeView1->SelectedNode->Parent->Nodes->Add(_);
+				}
+			}
+		}
+	}
+	private: System::Void deleteProcedureButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		int tempid = mainTable->CurrentCell->RowIndex;
+		if (this->treeView1->Focus()) {
+			if (this->treeView1->SelectedNode->Level == 1 && tempid >= 0 && tempid < controller->db->patients.size()) {
+				System::Windows::Forms::DialogResult dialogRes = MessageBox::Show(this, L"Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РїСЂРѕС†РµРґСѓСЂСѓ?", "РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ", MessageBoxButtons::OKCancel, MessageBoxIcon::Question);
+				if (System::Windows::Forms::DialogResult::OK == dialogRes) {
+					controller->deleteProcedure(tempid, msclr::interop::marshal_as<std::wstring>(this->treeView1->SelectedNode->Text));
+					this->treeView1->SelectedNode->Remove();
+				}
+			}
 		}
 	}
 };

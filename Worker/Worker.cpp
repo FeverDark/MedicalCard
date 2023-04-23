@@ -5,6 +5,19 @@
 std::vector<Man*> _tempworkersdb_; // Юзаю глобалку, потому что хочу
 std::vector<Man*> _temppatientssdb_; // Юзаю глобалку, потому что хочу
 
+Operation::Operation(std::wstring text = L"", std::wstring date = L"", int workerid = 0) {
+    this->date = date;
+    this->text = text;
+    this->workerid = workerid;
+}
+std::wstring Operation::getText() {
+    return this->text;
+}
+void Operation::setText(std::wstring text) {
+    this->text = text;
+}
+Operation::~Operation() {}
+
 Man::Man() {}
 Man::~Man() {}
 Man::Man(const Man&) {}
@@ -18,6 +31,13 @@ std::wstring Man::getDob() { return NULL; }
 std::wstring Man::getChange() { return NULL; }
 std::wstring Man::getCreation() { return NULL; }
 std::wstring Man::getDiagnosis() { return NULL; }
+std::vector<Operation> Man::getOperations() { return std::vector<Operation>(); };
+void Man::setName(std::wstring name) {}
+void Man::setDob(std::wstring dob) {}
+void Man::setDiagnosis(std::wstring diagnosis, std::wstring date) {}
+void Man::setOperation(std::wstring oldtext, std::wstring text) {}
+void Man::deleteOperation(std::wstring text) {}
+void Man::addOperation(std::wstring, std::wstring, int) {}
 
 Patient::Patient(int id = 0, std::wstring name = L"", std::wstring dob = L"", std::wstring creationdate = L"", std::wstring changedate = L"", std::wstring diagnosis = L"") {
     this->id = id;
@@ -34,6 +54,7 @@ Patient::Patient(const Patient& temp) {
     dob = temp.dob;
     creationdate = temp.creationdate;
     changedate = temp.changedate;
+    diagnosis = temp.diagnosis;
     a = temp.a;
 }
 Man* Patient::copy() { return new Patient(*this); }
@@ -44,6 +65,33 @@ std::wstring Patient::getDob() { return this->dob; }
 std::wstring Patient::getChange() { return this->changedate; }
 std::wstring Patient::getCreation() { return this->creationdate; }
 std::wstring Patient::getDiagnosis() { return this->diagnosis; }
+std::vector<Operation> Patient::getOperations() { return a; };
+void Patient::setName(std::wstring name) {
+    this->name = name;
+}
+void Patient::setDob(std::wstring dob) {
+    this->dob = dob;
+}
+void Patient::setDiagnosis(std::wstring diagnosis, std::wstring date) {
+    this->diagnosis = diagnosis;
+    this->changedate = date;
+}
+void Patient::setOperation(std::wstring oldtext, std::wstring text) {
+    std::for_each(a.begin(), a.end(), [&](Operation& temp) {
+        if (temp.getText() == oldtext) {
+            temp.setText(text);
+        }
+    });
+}
+void Patient::deleteOperation(std::wstring text) {
+    a.erase(std::remove_if(a.begin(), a.end(), [&](Operation& temp) {
+        return temp.getText() == text;
+
+    }), a.end());
+}
+void Patient::addOperation(std::wstring text, std::wstring date, int wid) {
+    a.push_back(Operation(text, date, wid));
+}
 
 Worker::Worker(int id = 0, std::wstring name = L"", std::wstring job = L"", std::string login = "", std::string password = "") {
     this->id = id;
@@ -75,11 +123,11 @@ const char* creatingTables = "CREATE TABLE IF NOT EXISTS patients ("
 "	diagnosis text NOT NULL"
 ");"
 "CREATE TABLE IF NOT EXISTS operations ("
-"	id integer PRIMARY KEY AUTOINCREMENT,"
-"	people_id integer NOT NULL,"
+"	people_id integer NOT NULL REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE,"
 "	textofoperation text NOT NULL,"
 "	operationdate date NOT NULL,"
-"	worker integer NOT NULL"
+"	worker integer NOT NULL REFERENCES workers(id) ON DELETE SET NULL ON UPDATE CASCADE,"
+"   PRIMARY KEY(\"people_id\", \"textofoperation\")"
 ");"
 "CREATE TABLE IF NOT EXISTS workers ("
 "	id integer PRIMARY KEY AUTOINCREMENT,"
@@ -97,6 +145,14 @@ std::wstring charToWstring(const std::string& str)
     return wstrTo;
 }
 
+std::string wstringToString(const std::wstring& wstr)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+    return converterX.to_bytes(wstr);
+}
+
 std::string getPatientsDataSql = "SELECT * FROM patients";
 int getPatientsData(void* _, int argc, char** argv, char** azColName) {
     for (int i = 1; i <= argc; i += 6) {
@@ -107,10 +163,10 @@ int getPatientsData(void* _, int argc, char** argv, char** azColName) {
 
 std::string getOperationsDataSql = "SELECT * FROM operations";
 int getOperations(void* _, int argc, char** argv, char** azColName) {
-    for (int i = 1; i <= argc; i += 5) {
+    for (int i = 1; i <= argc; i += 4) {
         for (int j = 0; j < _temppatientssdb_.size(); ++j) {
-            if (atoi(argv[i]) == _temppatientssdb_[j]->getId()) {
-                _temppatientssdb_[j]->pushOperation(Operation(charToWstring(argv[i + 1]), charToWstring(argv[i + 2]), atoi(argv[i + 3])));
+            if ((int)atoi(argv[i - 1]) == (int)_temppatientssdb_[j]->getId()) {
+                _temppatientssdb_[j]->pushOperation(Operation(charToWstring(argv[i]), charToWstring(argv[i + 1]), atoi(argv[i + 2])));
             }
         }
     }
@@ -145,14 +201,14 @@ DB::DB() {
             std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
             break;
         }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, getPatientsDataSql.c_str(), getPatientsData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }     
         if (SQLITE_OK != (rc = sqlite3_exec(db, getOperationsDataSql.c_str(), getOperations, NULL, NULL))) {
             std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
             break;
         }
-        if (SQLITE_OK != (rc = sqlite3_exec(db, getPatientsDataSql.c_str(), getPatientsData, NULL, NULL))) {
-            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
-            break;
-        }        
     } while (false);
     if (NULL != db) sqlite3_close(db);
     sqlite3_shutdown();
@@ -167,11 +223,181 @@ DB::DB() {
     }
     _tempworkersdb_.clear();
 }
+void DB::pushPatient(int id, std::wstring name, std::wstring dob, std::wstring creationdate, std::wstring changedate, std::wstring diagnosis) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("INSERT INTO patients VALUES (" + std::to_string(id) + ", \"" + wstringToString(name) + "\", \"" + wstringToString(dob) + "\", \"" + wstringToString(creationdate) + "\", \"" + wstringToString(changedate) + "\", \"" + wstringToString(diagnosis)+"\");").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::deletePatient(int id) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("DELETE FROM patients WHERE id = " + std::to_string(id) + ";").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::editPatient(int id, std::wstring name, std::wstring dob) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("UPDATE patients SET name = \"" + wstringToString(name) + "\", dob = \"" + wstringToString(dob) +"\" WHERE id = " + std::to_string(this->patients[id]->getId()) + ";").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::editPatientDiagnosis(int id, std::wstring diagnosis, std::wstring date) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("UPDATE patients SET diagnosis = \"" + wstringToString(diagnosis) + "\", changedate = \"" + wstringToString(date) +"\" WHERE id = " + std::to_string(this->patients[id]->getId()) + ";").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::editProcedure(int id, std::wstring text, std::wstring oldtext) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("UPDATE operations SET textofoperation = \"" + wstringToString(text) + "\" WHERE people_id = " + std::to_string(this->patients[id]->getId()) + " AND textofoperation = \"" + wstringToString(oldtext) + "\";").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::deleteProcedure(int id, std::wstring text) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("DELETE FROM operations WHERE people_id = " + std::to_string(this->patients[id]->getId()) + " AND textofoperation = \"" + wstringToString(text) + "\";").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
+void DB::addProcedure(int id, std::wstring text, std::wstring date, int wid) {
+    sqlite3* db = NULL;
+    int rc = 0;
+    do {
+        if (SQLITE_OK != (rc = sqlite3_initialize())) {
+            std::cerr << "Failed to initialize library: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_open_v2("card.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))) {
+            std::cerr << "Failed to open db: " << rc << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, creatingTables, NULL, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+        if (SQLITE_OK != (rc = sqlite3_exec(db, std::string("INSERT INTO operations VALUES (" + std::to_string(this->patients[id]->getId()) + ", \"" + wstringToString(text) + "\", \"" + wstringToString(date) + "\", " + std::to_string(wid) + ");").c_str(), getWorkersData, NULL, NULL))) {
+            std::cerr << "Failed to exec: " << rc << ", " << sqlite3_errmsg(db) << std::endl;
+            break;
+        }
+    } while (false);
+    if (NULL != db) sqlite3_close(db);
+    sqlite3_shutdown();
+}
 DB::~DB() {
-    for (int i = 0; i < patients.size(); ++i) {
-        delete patients[i];
+    for (std::vector<Man*>::iterator i = patients.begin(); i != patients.end(); ++i) {
+        delete *i;
     }
-    for (int i = 0; i < workers.size(); ++i) {
-        delete workers[i];
+    patients.clear();
+    for (std::vector<Man*>::iterator i = workers.begin(); i != workers.end(); ++i) {
+        delete* i;
     }
+    workers.clear();
 }

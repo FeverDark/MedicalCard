@@ -2,7 +2,6 @@
 #define CONTROLLER_H
 
 #include "Worker.h"
-#include "sha256.h"
 
 #ifdef CONTROLLER_EXPORTS
 #define CONTROLLER_API __declspec(dllexport)
@@ -10,7 +9,6 @@
 #define CONTROLLER_API __declspec(dllimport)
 #endif
 
-CONTROLLER_API std::string sha_256(std::string);
 
 class CONTROLLER_API CController {
 private:
@@ -24,6 +22,12 @@ public:
     ~CController();
     void pushPatient(int, std::wstring, std::wstring, std::wstring, std::wstring, std::wstring);
     void deletePatient(int);
+    void editPatient(int, std::wstring, std::wstring);
+    void editPatientDiagnosis(int, std::wstring, std::wstring);
+    std::vector<std::wstring> getProcedures(int);
+    void editProcedure(int, std::wstring, std::wstring);
+    void deleteProcedure(int, std::wstring);
+    void addProcedure(int, std::wstring, std::wstring, int);
 };
 
 #endif //CONTROLLER_H

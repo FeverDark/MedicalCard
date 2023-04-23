@@ -3,7 +3,10 @@
 
 #include <string>
 #include <iostream>
+#include <locale>
+#include <codecvt>
 #include <vector>
+#include <algorithm>
 #include "..\sqlite\sqlite3.h"
 
 #ifdef WORKER_EXPORTS
@@ -16,11 +19,10 @@ struct WORKER_API Operation {
 	std::wstring text;
 	std::wstring date;
 	int workerid;
-	Operation(std::wstring text = L"", std::wstring date = L"", int workerid = 0) {
-		this->date = date;
-		this->text = text;
-		this->workerid = workerid;
-	}
+	Operation(std::wstring, std::wstring, int);
+	std::wstring getText();
+	void setText(std::wstring);
+	~Operation();
 };
 
 class WORKER_API Man {
@@ -39,6 +41,13 @@ public:
 	virtual std::wstring getChange();
 	virtual std::wstring getCreation();
 	virtual std::wstring getDiagnosis();
+	virtual std::vector<Operation> getOperations();
+	virtual void setName(std::wstring);
+	virtual void setDob(std::wstring);
+	virtual void setDiagnosis(std::wstring, std::wstring);
+	virtual void setOperation(std::wstring, std::wstring);
+	virtual void deleteOperation(std::wstring);
+	virtual void addOperation(std::wstring, std::wstring, int);
 };
 
 class WORKER_API Patient : public Man {
@@ -62,6 +71,13 @@ public:
 	std::wstring getChange() override;
 	std::wstring getCreation() override;
 	std::wstring getDiagnosis() override;
+	std::vector<Operation> getOperations() override;
+	void setName(std::wstring) override;
+	void setDob(std::wstring) override;
+	void setDiagnosis(std::wstring, std::wstring) override;
+	void setOperation(std::wstring, std::wstring) override;
+	void deleteOperation(std::wstring) override;
+	void addOperation(std::wstring, std::wstring, int) override;
 };
 
 class WORKER_API Worker : public Man {
@@ -88,7 +104,14 @@ public:
 	std::vector<Man*> patients;
 	std::vector<Man*> workers;
 	DB();
+	void pushPatient(int, std::wstring, std::wstring, std::wstring, std::wstring, std::wstring);
+	void deletePatient(int);
+	void editPatient(int, std::wstring, std::wstring);
+	void editPatientDiagnosis(int, std::wstring, std::wstring);
 	~DB();
+	void editProcedure(int, std::wstring, std::wstring);
+	void deleteProcedure(int, std::wstring);
+	void addProcedure(int, std::wstring, std::wstring, int);
 };
 
 #endif //WORKER_H

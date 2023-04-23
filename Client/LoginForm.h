@@ -28,6 +28,7 @@ namespace Client {
 			{
 				delete components;
 			}
+			delete controller;
 		}
 	private: CController* controller;
 	private: System::Windows::Forms::Label^ loginText;
@@ -41,6 +42,7 @@ namespace Client {
 #pragma region Windows Form Designer generated code
 		void InitializeComponent(void)
 		{
+			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(LoginForm::typeid));
 			this->loginText = (gcnew System::Windows::Forms::Label());
 			this->passText = (gcnew System::Windows::Forms::Label());
 			this->loginButton = (gcnew System::Windows::Forms::Button());
@@ -73,6 +75,10 @@ namespace Client {
 			// 
 			// loginButton
 			// 
+			this->loginButton->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->loginButton->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->loginButton->FlatAppearance->BorderSize = 15;
+			this->loginButton->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
 			this->loginButton->Font = (gcnew System::Drawing::Font(L"Times New Roman", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(204)));
 			this->loginButton->Location = System::Drawing::Point(403, 260);
@@ -80,7 +86,7 @@ namespace Client {
 			this->loginButton->Size = System::Drawing::Size(100, 27);
 			this->loginButton->TabIndex = 12;
 			this->loginButton->Text = L"Войти";
-			this->loginButton->UseVisualStyleBackColor = true;
+			this->loginButton->UseVisualStyleBackColor = false;
 			this->loginButton->Click += gcnew System::EventHandler(this, &LoginForm::loginButton_Click);
 			// 
 			// password
@@ -119,6 +125,7 @@ namespace Client {
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoScroll = true;
 			this->AutoSizeMode = System::Windows::Forms::AutoSizeMode::GrowAndShrink;
+			this->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->ClientSize = System::Drawing::Size(884, 461);
 			this->Controls->Add(this->label1);
 			this->Controls->Add(this->loginText);
@@ -126,6 +133,7 @@ namespace Client {
 			this->Controls->Add(this->loginButton);
 			this->Controls->Add(this->password);
 			this->Controls->Add(this->login);
+			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->Name = L"LoginForm";
 			this->Text = L"Авторизация";
 			this->ResumeLayout(false);
@@ -135,7 +143,7 @@ namespace Client {
 #pragma endregion
 	private: System::Void loginButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		std::string l = msclr::interop::marshal_as<std::string>(this->login->Text);
-		std::string p = sha_256(msclr::interop::marshal_as<std::string>(this->password->Text));
+		std::string p = msclr::interop::marshal_as<std::string>(this->password->Text);
 
 		if (l.empty() || p.empty()) {
 			MessageBox::Show("Cannot be empty");
