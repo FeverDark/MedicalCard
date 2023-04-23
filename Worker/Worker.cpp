@@ -22,7 +22,7 @@ Man::Man() {}
 Man::~Man() {}
 Man::Man(const Man&) {}
 Man* Man::copy() { return NULL; }
-int Man::getId() { return NULL; }
+const int& Man::getId() const { return NULL; }
 void Man::pushOperation(Operation) {}
 std::string Man::getLogin() { return NULL; }
 std::string Man::getPassword() { return NULL; }
@@ -31,7 +31,7 @@ std::wstring Man::getDob() { return NULL; }
 std::wstring Man::getChange() { return NULL; }
 std::wstring Man::getCreation() { return NULL; }
 std::wstring Man::getDiagnosis() { return NULL; }
-std::vector<Operation> Man::getOperations() { return std::vector<Operation>(); };
+const std::vector<Operation>& Man::getOperations() const { return std::vector<Operation>(); };
 void Man::setName(std::wstring name) {}
 void Man::setDob(std::wstring dob) {}
 void Man::setDiagnosis(std::wstring diagnosis, std::wstring date) {}
@@ -58,14 +58,14 @@ Patient::Patient(const Patient& temp) {
     a = temp.a;
 }
 Man* Patient::copy() { return new Patient(*this); }
-int Patient::getId() { return this->id; }
+const int& Patient::getId() const { return this->id; }
 void Patient::pushOperation(Operation t) { this->a.push_back(t); }
 std::wstring Patient::getName() { return this->name; }
 std::wstring Patient::getDob() { return this->dob; }
 std::wstring Patient::getChange() { return this->changedate; }
 std::wstring Patient::getCreation() { return this->creationdate; }
 std::wstring Patient::getDiagnosis() { return this->diagnosis; }
-std::vector<Operation> Patient::getOperations() { return a; };
+const std::vector<Operation>& Patient::getOperations() const { return a; };
 void Patient::setName(std::wstring name) {
     this->name = name;
 }
@@ -109,7 +109,7 @@ Worker::Worker(const Worker& temp) {
     password = temp.password;
 }
 Man* Worker::copy() { return new Worker(*this); }
-int Worker::getId() { return this->id; }
+const int& Worker::getId() const { return this->id; }
 std::string Worker::getLogin() { return this->login; }
 std::string Worker::getPassword() { return this->password; }
 std::wstring Worker::getName() { return this->name; }
@@ -149,7 +149,6 @@ std::string wstringToString(const std::wstring& wstr)
 {
     using convert_typeX = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
-
     return converterX.to_bytes(wstr);
 }
 

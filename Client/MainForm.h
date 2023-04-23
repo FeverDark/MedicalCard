@@ -2,6 +2,7 @@
 #include "Creation.h"
 #include "EditForm.h"
 #include "ProcedureCreation.h"
+#include "UsefulForm.h"
 #include <thread>
 #include <msclr\marshal_cppstd.h>
 
@@ -50,6 +51,7 @@ namespace Client {
 	private: System::Windows::Forms::Button^ editButton;
 	private: System::Windows::Forms::Button^ deleteProcedure;
 	private: System::Windows::Forms::Button^ addProcedure;
+	private: System::Windows::Forms::Button^ usefulButton;
 	private: System::Windows::Forms::Button^ addButton;
 	private: System::Windows::Forms::RichTextBox^ richTextBox1;
 	private: System::Windows::Forms::Label^ label6;
@@ -95,6 +97,7 @@ namespace Client {
 			this->addButton = (gcnew System::Windows::Forms::Button());
 			this->deleteProcedure = (gcnew System::Windows::Forms::Button());
 			this->addProcedure = (gcnew System::Windows::Forms::Button());
+			this->usefulButton = (gcnew System::Windows::Forms::Button());
 			this->loginText = (gcnew System::Windows::Forms::TextBox());
 			this->articles->SuspendLayout();
 			this->articleText->SuspendLayout();
@@ -324,6 +327,21 @@ namespace Client {
 			this->addProcedure->Click += gcnew System::EventHandler(this, &MainForm::addProcedureButton_Click);
 
 			// 
+			// usefulButton
+			// 
+			this->usefulButton->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			this->usefulButton->FlatStyle = System::Windows::Forms::FlatStyle::Popup;
+			this->usefulButton->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
+			this->usefulButton->Location = System::Drawing::Point(650, 0);
+			this->usefulButton->Name = L"addProcedure";
+			this->usefulButton->Size = System::Drawing::Size(200, 27);
+			this->usefulButton->TabIndex = 0;
+			this->usefulButton->Text = L"Люди в больнице";
+			this->usefulButton->UseVisualStyleBackColor = true;
+			this->usefulButton->Click += gcnew System::EventHandler(this, &MainForm::usefulButton_Click);
+
+			// 
 			// loginText
 			// 
 			this->loginText->Font = (gcnew System::Drawing::Font(L"Times New Roman", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
@@ -344,6 +362,7 @@ namespace Client {
 			this->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->ClientSize = System::Drawing::Size(884, 461);
 			this->Controls->Add(this->loginText);
+			this->Controls->Add(this->usefulButton);
 			this->Controls->Add(this->actionButtons);
 			this->Controls->Add(this->peoples);
 			this->Controls->Add(this->allArticles);
@@ -399,9 +418,7 @@ namespace Client {
 		}
 		MainForm::Update();
 	}
-	private: System::Void MainForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
-		// Выгрузка
-	}
+	private: System::Void MainForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {}
 	private: System::Void addButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		Client::Creation creationform;
 		creationform.ShowDialog();
@@ -502,6 +519,10 @@ namespace Client {
 				}
 			}
 		}
+	}
+	private: System::Void usefulButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		Client::UsefulForm useful;
+		useful.ShowDialog();
 	}
 	private: System::Void deleteProcedureButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		int tempid = mainTable->CurrentCell->RowIndex;

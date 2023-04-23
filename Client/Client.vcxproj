@@ -142,6 +142,7 @@
     <ClCompile Include="MainForm.cpp" />
     <ClCompile Include="ProcedureCreation.cpp" />
     <ClCompile Include="Program.cpp" />
+    <ClCompile Include="UsefulForm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Creation.h">
@@ -157,6 +158,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="ProcedureCreation.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="UsefulForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
   </ItemGroup>
@@ -176,6 +180,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ProcedureCreation.resx">
       <DependentUpon>ProcedureCreation.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UsefulForm.resx">
+      <DependentUpon>UsefulForm.h</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

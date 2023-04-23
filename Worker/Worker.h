@@ -6,6 +6,7 @@
 #include <locale>
 #include <codecvt>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include "..\sqlite\sqlite3.h"
 
@@ -15,13 +16,14 @@
 #define WORKER_API __declspec(dllimport)
 #endif
 
+// Структура процедуры
 struct WORKER_API Operation {
-	std::wstring text;
-	std::wstring date;
-	int workerid;
-	Operation(std::wstring, std::wstring, int);
-	std::wstring getText();
-	void setText(std::wstring);
+	std::wstring text;							// Сам текст процедуры
+	std::wstring date;							// Дата выполнения
+	int workerid;								// id сотрудника
+	Operation(std::wstring, std::wstring, int);	// Конструктор(текст, дата, ид сотрудника)
+	std::wstring getText();						// Геттер текста (std::wstrin)
+	void setText(std::wstring);					// Сеттер текста (std::wstrin)
 	~Operation();
 };
 
@@ -31,23 +33,23 @@ public:
 	Man();
 	virtual ~Man();
 	Man(const Man&);
-	virtual Man* copy();
-	virtual int getId();
-	virtual void pushOperation(Operation);
-	virtual std::string getLogin();
-	virtual std::string getPassword();
-	virtual std::wstring getName();
-	virtual std::wstring getDob();
-	virtual std::wstring getChange();
-	virtual std::wstring getCreation();
-	virtual std::wstring getDiagnosis();
-	virtual std::vector<Operation> getOperations();
-	virtual void setName(std::wstring);
-	virtual void setDob(std::wstring);
-	virtual void setDiagnosis(std::wstring, std::wstring);
-	virtual void setOperation(std::wstring, std::wstring);
-	virtual void deleteOperation(std::wstring);
-	virtual void addOperation(std::wstring, std::wstring, int);
+	virtual Man* copy();												
+	virtual const int& getId() const;											// Получение уникального идентификатора человека (пациент, сотрудник) (int)
+	virtual void pushOperation(Operation);							// Добавление процедуры в карту пацинта
+	virtual std::string getLogin();									// Получение логина сотрудника (std::string)
+	virtual std::string getPassword();								// Получение пароля сотрудника (std::string)
+	virtual std::wstring getName();									// Получение имени человека (пациент, сотрудник) (std::wstring)
+	virtual std::wstring getDob();									// Получение даты рождения пациента (std::wstring)
+	virtual std::wstring getChange();								// Получение даты последнего редактирования карты (std::wstring)
+	virtual std::wstring getCreation();								// Получение даты создания карты (std::wstring)
+	virtual std::wstring getDiagnosis();							// Получение диагноза пацинта (std::wstring)
+	virtual const std::vector<Operation>& getOperations() const;	// Получение списка процедур пациента (const std::vector<Operation>&)
+	virtual void setName(std::wstring);								// Установление имени пациента, сотрудника - void (std::wstring)
+	virtual void setDob(std::wstring);								// Установление даты рождения пациента - void (std::wstring)
+	virtual void setDiagnosis(std::wstring, std::wstring);			// Установление диагноза пациенту - void (std::wstring текст, std::wstring дата)
+	virtual void setOperation(std::wstring, std::wstring);			// Редактирование процедуры пациента по ключу (человек, текст) - void (std::wstring текст, std::wstring старый текст)
+	virtual void deleteOperation(std::wstring);						// Удалении процедуры пациента по ключу (человек, текст) - void (std::wstring текст)
+	virtual void addOperation(std::wstring, std::wstring, int);		// Добавление процедуры пациенту - void (std::wstring текст, std::wstring дата, int ид сотрудника)
 };
 
 class WORKER_API Patient : public Man {
@@ -64,14 +66,14 @@ public:
 	~Patient();
 	Patient(const Patient&);
 	Man* copy() override;
-	int getId() override;
+	const int& getId() const override;
 	void pushOperation(Operation) override;
 	std::wstring getName() override;
 	std::wstring getDob() override;
 	std::wstring getChange() override;
 	std::wstring getCreation() override;
 	std::wstring getDiagnosis() override;
-	std::vector<Operation> getOperations() override;
+	const std::vector<Operation>& getOperations() const override;
 	void setName(std::wstring) override;
 	void setDob(std::wstring) override;
 	void setDiagnosis(std::wstring, std::wstring) override;
@@ -92,7 +94,7 @@ public:
 	~Worker();
 	Worker(const Worker&);
 	Man* copy() override;
-	int getId() override;
+	const int& getId() const override;
 	std::string getLogin() override;
 	std::string getPassword() override;
 	std::wstring getName() override;
@@ -104,14 +106,14 @@ public:
 	std::vector<Man*> patients;
 	std::vector<Man*> workers;
 	DB();
-	void pushPatient(int, std::wstring, std::wstring, std::wstring, std::wstring, std::wstring);
-	void deletePatient(int);
-	void editPatient(int, std::wstring, std::wstring);
-	void editPatientDiagnosis(int, std::wstring, std::wstring);
+	void pushPatient(int, std::wstring, std::wstring, std::wstring, std::wstring, std::wstring);	// Добавление пациента в дб - void (int ид, std::wstring имя, std::wstring дата рождения, std::wstring дата создания карты, std::wstring дата изменения карты, std::wstring диагноз)
+	void deletePatient(int);																		// Удаление пациента по ключу - void (int ид)
+	void editPatient(int, std::wstring, std::wstring);												// Изменения информации о пациенте - void (int ид, std::wstring имя, std::wstring дата рождения)
+	void editPatientDiagnosis(int, std::wstring, std::wstring);										// Изменение диагноза - void (int ид, std::wstring диагноз, std::wstring дата изменения карты)
 	~DB();
-	void editProcedure(int, std::wstring, std::wstring);
-	void deleteProcedure(int, std::wstring);
-	void addProcedure(int, std::wstring, std::wstring, int);
+	void editProcedure(int, std::wstring, std::wstring);											// Изменение процедуры по ключу - void (int ид, std::wstring текст, std::wstring старый_текст)
+	void deleteProcedure(int, std::wstring);														// Удаление процедуры по ключу - void (int ид, std::wstring текст)
+	void addProcedure(int, std::wstring, std::wstring, int);										// Добавление процедуры - void (int ид, std::wstring текст, std::wstring дата, int ид_сотрудника)
 };
 
 #endif //WORKER_H
