@@ -2,8 +2,8 @@
 #include "framework.h"
 #include "Worker.h"
 
-std::vector<Man*> _tempworkersdb_; // Юзаю глобалку, потому что хочу
-std::vector<Man*> _temppatientssdb_; // Юзаю глобалку, потому что хочу
+std::vector<Man*> _tempworkersdb_;
+std::vector<Man*> _temppatientssdb_;
 
 Operation::Operation(std::wstring text = L"", std::wstring date = L"", int workerid = 0) {
     this->date = date;
